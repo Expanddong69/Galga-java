@@ -1,4 +1,5 @@
 import com.src.main.classes.EntityA;
+import com.src.main.classes.EntityB;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -21,10 +22,13 @@ public class Bullet extends GameObject implements EntityA {
     }
         public void tick () {
             y -= 10;
-            if (Physics.Collision(this, game.eb)) {
+            for (int i = 0; i < game.eb.size(); i++) {
+                EntityB tempEnt = game.eb.get(i);
+                if (Physics.Collision(this,tempEnt)) {
+                    //collision detection
+                    System.out.println("COLLISION DETECTED");
 
-                System.out.println("COLLISION DETECTED");
-
+                }
             }
         }
 

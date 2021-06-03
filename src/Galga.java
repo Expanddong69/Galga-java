@@ -38,6 +38,9 @@ public class Galga extends Canvas  implements Runnable {
     public LinkedList<EntityA> ea;
     public LinkedList<EntityB> eb;
 
+    public static int HEALTH = 100;
+
+
   public static enum STATE {
         MENU,
         GAME
@@ -61,12 +64,12 @@ public class Galga extends Canvas  implements Runnable {
         }
         addKeyListener(new KeyInput(this));
         tex = new Textures(this);
-        p = new Player(400, 510, tex); // this is for the player positioning,also,we put this to refer to Game game in the Player Class
         c =  new Controller(tex,this);
+        p = new Player(400, 510, tex,this,c); // this is for the player positioning,also,we put this to refer to Game game in the Player Class
         menu = new Menu();
 
         c.createEnemy(enemy_count);
-
+        addKeyListener(new KeyInput(this));
         ea = c.getEntityA();
         eb = c.getEntityB();
 
@@ -143,6 +146,9 @@ public class Galga extends Canvas  implements Runnable {
         if (state == STATE.GAME) {
             p.tick();
             c.tick();
+
+
+
         }
         if (enemy_killed>=enemy_count) {
             enemy_count += 2;
@@ -167,6 +173,13 @@ public class Galga extends Canvas  implements Runnable {
         if(state == STATE.GAME) {
             p.render(g);
             c.render(g);
+
+            g.setColor(Color.gray);
+            g.fillRect(5,5,100,20);
+            g.setColor(Color.green);
+            g.fillRect(5,5,HEALTH,20);
+            g.setColor(Color.white);
+            g.drawRect(5,5,100,20);
         }
 
         ////////////////////////

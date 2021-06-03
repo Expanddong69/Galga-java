@@ -1,7 +1,9 @@
 
 import com.src.main.classes.EntityA;
+import com.src.main.classes.EntityB;
 
 import java.awt.*;
+import java.awt.font.GlyphJustificationInfo;
 import java.awt.image.BufferedImage;
 
 public class Player extends GameObject implements EntityA {
@@ -13,12 +15,18 @@ public class Player extends GameObject implements EntityA {
     private Textures tex;
 
 
-    public Player(double x, double y, Textures tex){
+    Controller controller;
+    Galga game;
+
+    public Player(double x, double y, Textures tex, Galga game,Controller controller){
         super(x,y);
         this.tex = tex;
+        this.controller = controller;
+        this.game = game;
     }
       public void tick(){ // movement limiter
         x+=velX;
+
         y+=velY;
         if (x <= 0)
             x = 0;
@@ -28,6 +36,19 @@ public class Player extends GameObject implements EntityA {
               y = 0;
           if (y >= 600 - 32 )
               y = 600 -32;
+
+          for (int i = 0; i < game.eb.size(); i++)
+          {
+              EntityB tempEnt = game.eb.get(i);
+
+              if (Physics.Collision(this,tempEnt))
+              {
+                  controller.removeEntity(tempEnt);
+                  game.HEALTH -= 10;
+                  game.setEnemy_killed(game.getEnemy_killed() + 1);
+
+              }
+          }
 
 
      }

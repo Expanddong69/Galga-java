@@ -1,3 +1,4 @@
+import com.src.main.classes.EntityA;
 import com.src.main.classes.EntityB;
 
 import java.awt.*;
@@ -30,11 +31,18 @@ import java.util.Random;
             x = r.nextInt(50);
             speed = r.nextInt(3) + 1;
         }
-        if (Physics.Collision(this,game.ea)) // enemy death
+
+        for (int i = 0; i<game.ea.size(); i++)
         {
-            c.removeEntity(this);
-            game.setEnemy_killed(game.getEnemy_killed() + 1);
+            EntityA tempEnt = game.ea.get(i);
+            if (Physics.Collision(this,tempEnt))
+            {
+                c.removeEntity(tempEnt); //removes bullet when it hits the enemy
+                c.removeEntity(this); // enemy death,the enemy sprite disappears whenever the bullet hits it
+                game.setEnemy_killed(game.getEnemy_killed() + 1);
+            }
         }
+
      }
     public void render(Graphics g){
         g.drawImage(tex.enemy, (int)x, (int)y,null);
