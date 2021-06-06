@@ -1,6 +1,3 @@
-import com.src.main.classes.EntityA;
-import com.src.main.classes.EntityB;
-
 import java.util.LinkedList;
 
 public class Physics {

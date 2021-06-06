@@ -1,7 +1,4 @@
 
-import com.src.main.classes.EntityA;
-import com.src.main.classes.EntityB;
-
 import java.awt.*;
 import java.awt.font.GlyphJustificationInfo;
 import java.awt.image.BufferedImage;
@@ -13,8 +10,9 @@ public class Player extends GameObject implements EntityA {
     private double velY = 0;
     private BufferedImage player;
     private Textures tex;
+    
 
-
+    Enemy e;
     Controller controller;
     Galga game;
 
@@ -44,10 +42,18 @@ public class Player extends GameObject implements EntityA {
               if (Physics.Collision(this,tempEnt))
               {
                   controller.removeEntity(tempEnt);
-                  game.HEALTH -= 10;
+                  game.HEALTH -= 30;
                   game.setEnemy_killed(game.getEnemy_killed() + 1);
 
               }
+              
+          }
+          if(game.HEALTH <= 0) {
+        	  Galga.state = Galga.STATE.GAMEOVER;
+        	  // losing points if enemy cross the window
+        	  e.highScore = Math.max(e.highScore, e.score);
+        	  e.score = 0; 
+        	  
           }
 
 

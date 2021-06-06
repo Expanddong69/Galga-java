@@ -1,13 +1,10 @@
-import com.src.main.classes.EntityA;
-import com.src.main.classes.EntityB;
-
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.Random;
 import java.awt.Graphics;
 
   public class Controller  {
-      private LinkedList<EntityA> ea = new LinkedList<EntityA>();
+      protected LinkedList<EntityA> ea = new LinkedList<EntityA>();
       private LinkedList<EntityB> eb = new LinkedList<EntityB>();
       EntityA entA;
       EntityB entB;
@@ -82,6 +79,12 @@ import java.awt.Graphics;
       }
       public void removeEntity (EntityB block) {
           eb.remove(block);
+      }
+      public void removeAllEntity (LinkedList<EntityB> eb) {
+          eb.clear();
+      }
+      public void removeAllBullets (LinkedList<EntityA> ea) {
+          ea.clear();
       }
       public  LinkedList<EntityA> getEntityA() {
           return ea;

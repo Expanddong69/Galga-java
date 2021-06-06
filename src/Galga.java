@@ -1,6 +1,3 @@
-import com.src.main.classes.EntityA;
-import com.src.main.classes.EntityB;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -10,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Random;
 
 
 public class Galga extends Canvas  implements Runnable {
@@ -25,25 +23,33 @@ public class Galga extends Canvas  implements Runnable {
     private BufferedImage spriteSheet = null;
     private BufferedImage background = null;
 
+
     private boolean is_shooting = false;
 
-    private int enemy_count = 5;
+    private static int enemy_count = 5;
     private int enemy_killed = 0;
 
     private Player p;
     private Controller c;
     private Textures tex;
     private Menu menu;
+    private Gameover gameover;
 
     public LinkedList<EntityA> ea;
     public LinkedList<EntityB> eb;
 
     public static int HEALTH = 100;
 
+    Random rand = new Random();
+    int velocity = 0;
+    int level = 1;
 
-  public static enum STATE {
+
+
+    public static enum STATE {
         MENU,
-        GAME
+        GAME,
+        GAMEOVER;
 
     };
 
@@ -56,10 +62,7 @@ public class Galga extends Canvas  implements Runnable {
         try {
             background = loader.loadImage("bg.png");
             spriteSheet = loader.loadImage("spritesheet.png");
-
-
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         addKeyListener(new KeyInput(this));
@@ -67,8 +70,14 @@ public class Galga extends Canvas  implements Runnable {
         c =  new Controller(tex,this);
         p = new Player(400, 510, tex,this,c); // this is for the player positioning,also,we put this to refer to Game game in the Player Class
         menu = new Menu();
+        gameover = new Gameover();
 
         c.createEnemy(enemy_count);
+
+        if(state == STATE.GAMEOVER) {
+        	c.createEnemy(0);
+
+        }
         addKeyListener(new KeyInput(this));
         ea = c.getEntityA();
         eb = c.getEntityB();
@@ -92,7 +101,7 @@ public class Galga extends Canvas  implements Runnable {
 
     }
 
-    private synchronized void stop() {
+    public synchronized void stop() {
         if (!running)
             return;
         running = false;
@@ -105,7 +114,7 @@ public class Galga extends Canvas  implements Runnable {
 
     }
 
-    @Override
+
     public void run() {
         init();
         long lastTime = System.nanoTime();
@@ -117,7 +126,8 @@ public class Galga extends Canvas  implements Runnable {
         long timer = System.currentTimeMillis();
 
         while (running) {
-            //Game Loop
+
+            //game loop and fps counter
             long now = System.nanoTime();
             delta += (now - lastTime) / ns;
             lastTime = now;
@@ -137,6 +147,8 @@ public class Galga extends Canvas  implements Runnable {
             }
 
 
+
+
         }
         stop();
 
@@ -148,12 +160,24 @@ public class Galga extends Canvas  implements Runnable {
             c.tick();
 
 
-
         }
-        if (enemy_killed>=enemy_count) {
-            enemy_count += 2;
-            enemy_killed = 0;
-            c.createEnemy(enemy_count);
+
+        if(state == STATE.GAME) {
+        	if (enemy_killed>=enemy_count) {
+        		++level; // Increase level number
+        		enemy_count += 2;
+        		enemy_killed = 0;
+        		c.createEnemy(enemy_count);
+
+        	}
+        }
+        else if(state == STATE.GAMEOVER ) {
+        	level = 1;
+        	c.removeAllEntity(eb); // To remove all enemies after game is over to start again safely
+        	c.removeAllBullets(ea); // To remove all bullets after game is over
+        	enemy_killed = 0;
+        	enemy_count = 5;
+        	c.createEnemy(enemy_count); // To make the enemy spawn from beginning again
         }
 
 
@@ -174,18 +198,29 @@ public class Galga extends Canvas  implements Runnable {
             p.render(g);
             c.render(g);
 
+            Score(g); //showing score in the screen
+
             g.setColor(Color.gray);
             g.fillRect(5,5,100,20);
             g.setColor(Color.green);
             g.fillRect(5,5,HEALTH,20);
             g.setColor(Color.white);
             g.drawRect(5,5,100,20);
+
+
+
+
         }
 
         ////////////////////////
         else if(state == STATE.MENU) {
             menu.render(g);
 
+        }
+        else if(state == STATE.GAMEOVER) {
+        	gameover.render(g);
+
+        	//HighScore(g);
         }
         g.dispose();
         bs.show();
@@ -197,30 +232,32 @@ public class Galga extends Canvas  implements Runnable {
         if (state == STATE.GAME) {
             if (key == KeyEvent.VK_RIGHT) {
                 p.setVelX(3);
+                velocity = 483;
             } else if (key == KeyEvent.VK_LEFT) {
                 p.setVelX(-3);
+                velocity = 483;
             } else if (key == KeyEvent.VK_SPACE && !is_shooting) {
-                c.addEntity(new Bullet(p.getX(), p.getY(), tex, this));
+                c.addEntity(new Bullet(p.getX() + 18, p.getY(), tex, this));
                 is_shooting = true;
-
-
             }
         }
     }
+
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
 
         if (key == KeyEvent.VK_RIGHT) {
             p.setVelX(0);
+            velocity = 0;
         } else if (key == KeyEvent.VK_LEFT) {
             p.setVelX(0);
+            velocity = 0;
         }
         else if (key == KeyEvent.VK_SPACE) {
             is_shooting = false;
 
         }
     }
-
 
 
     public static void main(String[] args) {
@@ -253,6 +290,7 @@ public class Galga extends Canvas  implements Runnable {
         this.enemy_count = enemy_count;
     }
 
+
     public int getEnemy_killed() {
         return enemy_killed;
     }
@@ -260,7 +298,26 @@ public class Galga extends Canvas  implements Runnable {
     public void setEnemy_killed(int enemy_killed) {
         this.enemy_killed = enemy_killed;
     }
+    String str2 = "\u221E";
 
+    public void Score(Graphics g) {
+    	int x = 5, y = 42;
+    	Enemy e = new Enemy(HEALTH, enemy_count, tex, c, null);
+    	Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Font fnt0 = new Font("arial", Font.PLAIN, 13);
+ 		g.setFont(fnt0);
+ 		g.setColor(Color.white);//#
+ 		g.drawString("Score: " + e.getScore(), x, y); // To show current score
+		g.drawString("High score: " + e.getHighScore(), x, y+20); // To show high score
+		g.drawString("Velocity: " + velocity + "km/s", x, y+40); // To show velocity
+		if (level <= 100) {
+			g.drawString("Level: " + level , x, y+60);
+		}
+
+
+    }
 
 }
 
